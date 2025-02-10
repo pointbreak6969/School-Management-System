@@ -1,17 +1,21 @@
 const StudentBill = require("../models/studentBill.js");
 const ApiError = require('../utils/ApiError.js');
-const FeeStructure = require("../models/FeeStructure.js");
+const FeeStructure = require('../models/FeeStructure.js');
 const Student = require('../models/studentSchema.js');
 
-const generateMonthlyBill = async (req, res) => {
+const generateMonthlyBill = async (req, res, next) => {
     try {
         const { studentId, month, year } = req.body;
+
+        if (!studentId || month === undefined || !year) {
+            return next(new ApiError(400, 'Please provide studentId, month and year'));
+        }
 
         const student = await Student.findById(studentId)
             .populate('sclassName school');
 
         if (!student) {
-            throw new ApiError(404, 'Student not found');
+            return next(new ApiError(404, 'Student not found'));
         }
 
         const feeStructure = await FeeStructure.findOne({
@@ -21,22 +25,30 @@ const generateMonthlyBill = async (req, res) => {
         });
 
         if (!feeStructure) {
-            throw new ApiError(404, 'Fee structure not found');
+            return next(new ApiError(404, 'Fee structure not found'));
         }
 
         const monthlyFees = feeStructure.fees.find(fee => fee.type === 'Monthly');
+        if (!monthlyFees) {
+            return next(new ApiError(404, 'Monthly fee structure not found'));
+        }
+
         let components = [...monthlyFees.components];
 
         // Add annual fees in first month
         if (month === 3) {
             const annualFees = feeStructure.fees.find(fee => fee.type === 'Annual');
-            components = [...components, ...annualFees.components];
+            if (annualFees) {
+                components = [...components, ...annualFees.components];
+            }
         }
 
         // Add quarterly fees
         if ([3, 6, 9, 0].includes(month)) {
             const quarterlyFees = feeStructure.fees.find(fee => fee.type === 'Quarterly');
-            components = [...components, ...quarterlyFees.components];
+            if (quarterlyFees) {
+                components = [...components, ...quarterlyFees.components];
+            }
         }
 
         const totalAmount = components.reduce((sum, component) => sum + component.amount, 0);
@@ -61,10 +73,9 @@ const generateMonthlyBill = async (req, res) => {
             data: bill
         });
     } catch (error) {
-        throw new Error(400, 'Failed to generate bill');    
+        return next(new ApiError(500, `Failed to generate bill: ${error.message}`));
     }
-}
-
+};
 const recordPayment = async (req, res) => {
     try {
         const { billId } = req.params;
@@ -102,25 +113,52 @@ const recordPayment = async (req, res) => {
     }
 };
 
-const getBillingSummary = async (req, res) => {
+const getBillingSummary = async (req, res, next) => {
     try {
         const { studentId } = req.params;
         const { startDate, endDate } = req.query;
 
-        const bills = await StudentBill.find({
-            student: studentId,
-            billDate: { 
-                $gte: new Date(startDate), 
-                $lte: new Date(endDate) 
-            }
-        }).sort({ billDate: -1 });
+        if (!studentId) {
+            return next(new ApiError(400, 'Student ID is required'));
+        }
+
+        let query = { student: studentId };
+
+        // Add date range if provided
+        if (startDate && endDate) {
+            // Convert dates to start of day and end of day
+            const startDateTime = new Date(startDate);
+            startDateTime.setHours(0, 0, 0, 0);
+
+            const endDateTime = new Date(endDate);
+            endDateTime.setHours(23, 59, 59, 999);
+
+            query.billDate = {
+                $gte: startDateTime,
+                $lte: endDateTime
+            };
+        }
+
+        // Fetch bills with populated references if needed
+        console.log(query);
+        const bills = await StudentBill.find(query)
+            .sort({ billDate: -1 });
+
+        if (!bills || bills.length === 0) {
+            return res.status(200).json({
+                success: true,
+                message: 'No bills found for the specified period',
+                data: []
+            });
+        }
 
         res.status(200).json({
             success: true,
+            count: bills.length,
             data: bills
         });
     } catch (error) {
-        throw new ApiError(400, 'Failed to fetch billing summary');
+        return next(new ApiError(500, `Failed to fetch billing summary: ${error.message}`));
     }
 };
 
