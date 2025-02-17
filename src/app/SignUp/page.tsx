@@ -11,6 +11,7 @@ import * as z from "zod";
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { signUpSchema } from '../../../schemas/signUpSchema';
+import { signIn } from 'next-auth/react';
 import axios from "axios";
 const page = () => {
   const [error, setError] = useState<string | null>(null);
@@ -27,21 +28,39 @@ const page = () => {
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     try {
       const response = await axios.post("/api/signup", data);
+      
       toast({
         title: "Success",
         description: response.data.message,
-      })
-      router.push("/Profile");
+      });
+  
+      // Automatically sign in the user after successful registration
+      const result = await signIn("credentials", {
+        redirect: false,
+        email: data.email,
+        password: data.password,
+      });
+  
+      if (result?.error) {
+        toast({
+          title: "Login Failed",
+          description: "Could not log in automatically. Please sign in manually.",
+          variant: "destructive",
+        });
+      } else {
+        router.push("/Profile");
+      }
     } catch (error) {
       console.error('Error during sign-up:', error);
-
+  
       toast({
         title: 'Sign Up Failed',
         description: "An error occurred while signing up",
         variant: 'destructive',
       });
     }
-  }
+  };
+  
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <Card className="w-96">
