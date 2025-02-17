@@ -1,12 +1,12 @@
 import mongoose, {Schema, Document} from "mongoose";
 
 export interface IPdf extends Document {
-    email: string;
-    document: string;
-    emails: string[];
-    xfdf: string[];
-    signedBy: string[];
-    signed: boolean;
+    email: string; // email of the requestor of the signature
+    document: string; // storage reference to the actual PDF
+    emails: string[]; // an array of users to sign the document
+    xfdf: string[]; // array of signatures
+    signedBy: string[]; // array of users who signed the document
+    signed: boolean; // boolean to check if the document is signed by all users
 }
 
 const PdfSchema: Schema = new Schema({
@@ -23,5 +23,6 @@ const PdfSchema: Schema = new Schema({
 
 });
 
-const PdfModel = (mongoose.models.Pdf as mongoose.Model<IPdf>) || mongoose.model<IPdf>('Pdf', PdfSchema);
+// const PdfModel = (mongoose.models.Pdf as mongoose.Model<IPdf>) || mongoose.model<IPdf>('Pdf', PdfSchema);
+const PdfModel = mongoose.models? (mongoose.models.Pdf as mongoose.Model<IPdf>) : mongoose.model<IPdf>('Pdf', PdfSchema);
 export default PdfModel;
