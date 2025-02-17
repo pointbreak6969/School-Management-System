@@ -11,8 +11,8 @@ export async function POST(request: Request) {
         if (exisingUser) {
             return new Response("User already exists", {status: 400});
         }
-        const hashedPassword = await bcrypt.hash(password, 12); 
-        const user = await UserModel.create({name, email, password: hashedPassword});
+      0
+        const user = await UserModel.create({name, email, password});
         return Response.json({
             success: true,
             message: "User Registered Successfully"

@@ -3,6 +3,7 @@ import React from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
 import { Button } from "@/components/ui/button";
+import { signOut } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -17,7 +18,8 @@ const Profile = () => {
   // Mock user data
   const user = {
     displayName: "John Doe",
-    photoURL: "https://as1.ftcdn.net/jpg/02/43/12/34/1000_F_243123463_zTooub557xEWABDLk0jJklDyLSGl2jrr.jpg",
+    photoURL:
+      "https://as1.ftcdn.net/jpg/02/43/12/34/1000_F_243123463_zTooub557xEWABDLk0jJklDyLSGl2jrr.jpg",
     email: "john.doe@example.com",
   };
   const { displayName, photoURL, email } = user;
@@ -38,7 +40,9 @@ const Profile = () => {
           </Avatar>
 
           <div className="flex flex-col">
-            <div className="text-sm font-medium text-gray-700">{displayName}</div>
+            <div className="text-sm font-medium text-gray-700">
+              {displayName}
+            </div>
             <div className="text-xs text-gray-500">{email}</div>
           </div>
 
@@ -52,7 +56,9 @@ const Profile = () => {
               <DropdownMenuItem disabled>Profile</DropdownMenuItem>
               <DropdownMenuItem disabled>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem disabled>Sign out</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => signOut({callbackUrl: "/SignIn"})} className="cursor-pointer"> 
+                Sign out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
