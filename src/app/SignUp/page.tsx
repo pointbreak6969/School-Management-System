@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-
+import {zodResolver} from "@hookform/resolvers/zod";
+import { useForm } from 'react-hook-form';
+import * as zod from "zod";
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 const page = () => {
   const [error, setError] = useState<string | null>(null);
-
-  const handleSignUp = (e: FormEvent) => {
-    e.preventDefault();
-
-    // Add your sign-up logic here
-  };
+  const router = useRouter();
+  const {toast}  = useToast();
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
@@ -29,7 +29,7 @@ const page = () => {
             </Alert>
           )}
 
-          <form onSubmit={handleSignUp}>
+          <form >
             {/* Name Field */}
             <div className="mb-4">
               <label htmlFor="name" className="block text-gray-700 text-sm font-semibold mb-1">
