@@ -5,16 +5,50 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-
+import { useRouter } from 'next/navigation';
+import { signInSchema } from '../../../schemas/signInSchema';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import {signIn} from "next-auth/react"
+import { useToast } from "@/hooks/use-toast"
 const page = () => {
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  const handleSignIn = (event: FormEvent) => {
-    event.preventDefault();
-
-    // Add your sign-in logic here
-  };
-
+  const form = useForm<z.infer<typeof signInSchema>>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    }
+  })
+  const {toast} = useToast();
+  const onSubmit = async (data: z.infer<typeof signInSchema>) => {
+    const result = await signIn("credentials", {
+      redirect: false,
+      email: data.email,
+      password: data.password
+    })
+    if (result?.error) {
+      if (result.error == "CredentialsSignin") {
+        toast({
+          title: "Login Failed",
+          description: "Invalid email or password",
+         variant: "destructive"
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive"
+        })
+      }
+    }
+    if (result?.url) {
+      router.replace("/Profile")
+    }
+  }
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <Card className="w-96">
@@ -29,7 +63,7 @@ const page = () => {
             </Alert>
           )}
 
-          <form onSubmit={handleSignIn}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
             {/* Email Field */}
             <div className="mb-4">
               <label htmlFor="email" className="block text-gray-700 text-sm font-semibold mb-1">
@@ -37,6 +71,7 @@ const page = () => {
               </label>
               <Input
                 type="email"
+                {...form.register("email")}
                 id="email"
                 placeholder="Enter your email"
                 className="shadow-sm border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-teal-500 focus:border-teal-500 transition duration-200"
@@ -51,6 +86,7 @@ const page = () => {
               <Input
                 type="password"
                 id="password"
+                {...form.register("password")}
                 placeholder="Enter your password"
                 className="shadow-sm border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-teal-500 focus:border-teal-500 transition duration-200"
               />
@@ -65,7 +101,7 @@ const page = () => {
           {/* Links */}
           <div className="mt-8 text-center">
             <p className="text-gray-600">Don't have an account?</p>
-            <Link href="/signUp" className="text-teal-600 hover:text-teal-700 font-semibold">
+            <Link href="/SignUp" className="text-teal-600 hover:text-teal-700 font-semibold">
               Sign Up Here
             </Link>
           </div>
