@@ -9,19 +9,19 @@ export async function middleware(request: NextRequest) {
     console.log("Token:", token);
     console.log("URL Pathname:", url.pathname);
   
-    if (token && (url.pathname.startsWith('/SignUp') || url.pathname.startsWith('/SignIn'))) {
+    if (token && (url.pathname.startsWith('/signup') || url.pathname.startsWith('/signin'))) {
       console.log("Redirecting to /Profile");
       return NextResponse.redirect(new URL("/Profile", request.url));
     }
   
     if (!token && url.pathname.startsWith('/Profile')) {
-      console.log("Redirecting to /SignIn");
-      return NextResponse.redirect(new URL("/SignIn", request.url));
+      console.log("Redirecting to /signin");
+      return NextResponse.redirect(new URL("/signin", request.url));
     }
   
     return NextResponse.next();
   }
 
 export const config={
-    matcher:["/SignIn","SignUp","/Profile"]
+    matcher:["/signin","/signup","/profile"]
 }

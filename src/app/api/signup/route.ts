@@ -1,5 +1,6 @@
 import connectDb from "@/lib/connectDb";
 import UserModel from "../../../../model/Users";
+import PdfModel from "../../../../model/Pdf";
 
 
 
@@ -24,3 +25,4 @@ export async function POST(request: Request) {
         })
     }
 }
+
