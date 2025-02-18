@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Profile from '../components/Profile';
-import SignList from '../components/SignList';
-import SignedList from '../components/SignedList';
+import SignList from '../admin/page';
+import SignedList from '../signedlist/page';
 
 const page= () => {
   return (
