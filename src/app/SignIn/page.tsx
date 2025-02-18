@@ -46,7 +46,7 @@ const page = () => {
       }
     }
     if (result?.url) {
-      router.replace("/Profile")
+      router.replace("/admin")
     }
   }
   return (

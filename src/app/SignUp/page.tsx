@@ -127,7 +127,7 @@ const page = () => {
           {/* Sign In Link */}
           <div className="mt-8 text-center">
             <p className="text-gray-600">Already have an account?</p>
-            <Link href="/signIn" className="text-teal-600 hover:text-teal-700 font-semibold">
+            <Link href="/signin" className="text-teal-600 hover:text-teal-700 font-semibold">
               Sign In
             </Link>
           </div>
