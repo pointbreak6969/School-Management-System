@@ -21,16 +21,16 @@ export default function ProfileClient({ session }: { session: any }) {
   const { user } = session;
 
   return (
-    <div className="bg-gray-100 py-6">
+    <div className="bg-teal-50 py-3">
       <div className="container mx-auto flex items-center justify-between p-4">
         {/* App Title */}
-        <a href="/" className="text-2xl font-semibold text-gray-800">
-          PDFTron Sign App
+        <a href="/" className="text-2xl font-semibold text-teal-800 hover:text-teal-600 transition-colors duration-200">
+          Sign PDF
         </a>
 
         {/* Profile Section */}
         <div className="flex items-center space-x-4">
-          <Avatar className="h-10 w-10">
+          <Avatar className="h-10 w-10 border border-teal-300 shadow-md">
             <AvatarImage
               src={user?.image || "https://avatar.iran.liara.run/public/32"}
               alt={user?.name || "User"}
@@ -39,18 +39,18 @@ export default function ProfileClient({ session }: { session: any }) {
           </Avatar>
 
           <div className="flex flex-col">
-            <div className="text-sm font-medium text-gray-700">
-              {user?.name || "Unknown User"}
-            </div>
+            <div className="text-sm font-medium text-teal-800">{user?.name || "Unknown User"}</div>
             <div className="text-xs text-gray-500">{user?.email}</div>
           </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">My Account</Button>
+              <Button variant="outline" className="hover:bg-teal-100 transition-colors duration-200">
+                My Account
+              </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuContent className="w-56 bg-white shadow-lg rounded-lg border border-teal-200">
+              <DropdownMenuLabel className="font-semibold text-teal-800">My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem disabled>Profile</DropdownMenuItem>
               <DropdownMenuItem disabled>Settings</DropdownMenuItem>
