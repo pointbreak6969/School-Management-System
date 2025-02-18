@@ -56,8 +56,8 @@ export default function ProfileClient({ session }: { session: any }) {
               <DropdownMenuItem disabled>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => signOut({ callbackUrl: "/SignIn" })}
-                className="cursor-pointer hover:bg-teal-100 transition-colors duration-200"
+                onClick={() => signOut({ callbackUrl: "/signin" })}
+                className="cursor-pointer"
               >
                 Sign out
               </DropdownMenuItem>

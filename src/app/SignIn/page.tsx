@@ -101,7 +101,7 @@ const page = () => {
           {/* Links */}
           <div className="mt-8 text-center">
             <p className="text-gray-600">Don't have an account?</p>
-            <Link href="/SignUp" className="text-teal-600 hover:text-teal-700 font-semibold">
+            <Link href="/signup" className="text-teal-600 hover:text-teal-700 font-semibold">
               Sign Up Here
             </Link>
           </div>
