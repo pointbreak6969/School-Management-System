@@ -37,9 +37,6 @@ const Page = () => {
     console.log(`View document with ID: ${id}`);
   };
 
-  const handleSign = (id: string) => {
-    console.log(`Sign document with ID: ${id}`);
-  };
 
   const handleDelete = (id: string) => {
     console.log(`Delete document with ID: ${id}`);
@@ -51,7 +48,7 @@ const Page = () => {
       <div className="flex-grow p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Documents to Sign</h1>
-          <Button><Link href={'/assign'}>New Contracta</Link></Button>
+          <Button><Link href={'/assign'}>New Contracts</Link></Button>
         </div>
 
         <Table>
@@ -81,8 +78,8 @@ const Page = () => {
                     <Button variant="ghost" size="icon" onClick={() => handleView(doc.id)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleSign(doc.id)}>
-                      <FileSignature className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" >
+                      <Link href={'/usersign'}><FileSignature className="h-4 w-4" /></Link>
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => handleDelete(doc.id)}>
                       <Trash2 className="h-4 w-4" />
