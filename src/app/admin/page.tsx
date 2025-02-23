@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Eye, FileSignature, Trash2, Copy } from "lucide-react";
 import Sidebar from "../components/Sidebar";
+import Link from "next/link";
 
 const Page = () => {
   const documents = [
@@ -50,7 +51,7 @@ const Page = () => {
       <div className="flex-grow p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Documents to Sign</h1>
-          <Button>New Contract</Button>
+          <Button><Link href={'/assign'}>New Contracta</Link></Button>
         </div>
 
         <Table>
