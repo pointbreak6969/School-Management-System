@@ -14,6 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserPlus, Mail, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface Assignee {
   id: number;
@@ -26,12 +27,21 @@ const Assign: React.FC = () => {
   const [displayName, setDisplayName] = useState<string>("");
   const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
-  const router=useRouter()
+  const router = useRouter();
   const usersPerPage = 3; 
   const pageCount = Math.ceil(assignees.length / usersPerPage);
 
   const addUser = () => {
-    if (!displayName || !email) return;
+    if (!displayName || !email) {
+      toast.error("Please fill in both name and email");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
 
     const newUser: Assignee = {
       id: new Date().getTime(),
@@ -45,7 +55,13 @@ const Assign: React.FC = () => {
   };
 
   const handleContinue = () => {
-    router.push('/preparation')
+    if (assignees.length === 0) {
+      toast.error("Please add at least one user before continuing");
+      return;
+    }
+    
+    localStorage.setItem("assignees", JSON.stringify(assignees));
+    router.push('/preparation');
   };
 
   const handlePageChange = (pageIndex: number) => {
@@ -63,7 +79,6 @@ const Assign: React.FC = () => {
         </h2>
 
         <div className="flex gap-6">
-          {/* Add User Card */}
           <Card className="w-1/2">
             <CardHeader>
               <CardTitle className="flex items-center text-xl">
@@ -149,7 +164,6 @@ const Assign: React.FC = () => {
                     )}
                   </>
                 ) : (
-                  
                   <p className="text-gray-500">No users added yet.</p>
                 )}
               </div>

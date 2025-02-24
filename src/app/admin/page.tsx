@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -7,43 +7,53 @@ import { Eye, FileSignature, Trash2, Copy } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Link from "next/link";
 
+interface Document {
+  _id: string;
+  email: string;
+  document: string;
+  signed: boolean;
+  createdAt: string;
+}
+
 const Page = () => {
-  const documents = [
-    {
-      id: "DOC-001",
-      name: "Service Agreement",
-      identification: "12345678",
-      status: "Pending",
-    },
-    {
-      id: "DOC-002",
-      name: "Employment Contract",
-      identification: "87654321",
-      status: "Pending",
-    },
-    {
-      id: "DOC-003",
-      name: "NDA Agreement",
-      identification: "11223344",
-      status: "Pending",
-    },
-  ];
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleCopy = (id: string) => {
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const response = await fetch('/api/fetchdocuments');
+        
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data = await response.json();
+        const unsignedDocuments = data.filter((doc: Document) => !doc.signed);
+        setDocuments(unsignedDocuments);
+      } catch (error) {
+        console.error('Error fetching documents:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchDocuments();
+  }, []);
+
+  const handleCopy = async (id: string) => {
+   
   };
 
   const handleView = (id: string) => {
-
+   
   };
 
-  const handleSign = (id: string) => {
  
-  };
-
-  const handleDelete = (id: string) => {
-
-  };
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-xl">Loading documents...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -57,36 +67,36 @@ const Page = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-teal-100">
-              <TableHead>ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Identification</TableHead>
+              <TableHead>Document ID</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Created Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {documents.map((doc) => (
-              <TableRow key={doc.id} className="hover:bg-green-100">
-                <TableCell>{doc.id}</TableCell>
-                <TableCell>{doc.name}</TableCell>
-                <TableCell>{doc.identification}</TableCell>
+              <TableRow key={doc._id} className="hover:bg-green-100">
+                <TableCell>{doc._id.substring(0, 8)}...</TableCell>
+                <TableCell>{doc.email}</TableCell>
+                <TableCell>{new Date(doc.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>
-                  <Badge variant={doc.status === "Pending" ? "destructive" : "outline"}>{doc.status}</Badge>
+                  <Badge variant={doc.signed ? "outline" : "destructive"}>
+                    {doc.signed ? "Signed" : "Pending"}
+                  </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleCopy(doc.id)}>
+                    <Button variant="ghost" size="icon" onClick={() => handleCopy(doc._id)}>
                       <Copy className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleView(doc.id)}>
+                    <Button variant="ghost" size="icon" onClick={() => handleView(doc._id)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" >
-                      <Link href={'/usersign'}><FileSignature className="h-4 w-4" /></Link>
+                    <Button variant="ghost" size="icon">
+                      <Link href={`/usersign/${doc._id}`}><FileSignature className="h-4 w-4" /></Link>
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(doc.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    
                   </div>
                 </TableCell>
               </TableRow>

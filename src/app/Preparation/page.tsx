@@ -1,14 +1,27 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import axios, { AxiosError } from "axios";
-import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Test from "../components/Test";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+interface Assignee {
+    id: number;
+    name: string;
+    email: string;
+}
 
 interface FormData {
     recipientEmail: string;
@@ -23,11 +36,18 @@ interface DocumentPayload {
 const Page = () => {
     const router = useRouter();
     const { data: session } = useSession();
-    const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
     const [editorContent, setEditorContent] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [assignees, setAssignees] = useState<Assignee[]>([]);
 
-    const onSubmit = async (data: FormData) => {
+    useEffect(() => {
+        const savedAssignees = localStorage.getItem("assignees");
+        if (savedAssignees) {
+            setAssignees(JSON.parse(savedAssignees));
+        }
+    }, []);
+
+    const onSubmit = async () => {
         if (!editorContent) {
             toast.error("Please add some content to the document");
             return;
@@ -38,7 +58,7 @@ const Page = () => {
             const payload: DocumentPayload = {
                 email: session?.user?.email,
                 document: editorContent,
-                emails: [data.recipientEmail],
+                emails: assignees.map(assignee => assignee.email),
             };
 
             await axios.post("/api/documents", payload);
@@ -57,40 +77,34 @@ const Page = () => {
         <div className="flex min-h-screen bg-gray-100 p-6 gap-6">
             <Card className="w-1/3">
                 <CardHeader>
-                    <CardTitle>Send Document</CardTitle>
+                    <CardTitle>Selected Recipients</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                        <div>
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                Recipient's Email:
-                            </label>
-                            <Input
-                                type="email"
-                                placeholder="Enter email"
-                                {...register("recipientEmail", { 
-                                    required: "Email is required",
-                                    pattern: {
-                                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                        message: "Invalid email address"
-                                    }
-                                })}
-                                className="w-full"
-                            />
-                            {errors.recipientEmail && (
-                                <p className="text-red-500 text-sm mt-1">
-                                    {errors.recipientEmail.message}
-                                </p>
-                            )}
-                        </div>
+                    <div className="space-y-4">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Email</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {assignees.map((assignee) => (
+                                    <TableRow key={assignee.id}>
+                                        <TableCell>{assignee.name}</TableCell>
+                                        <TableCell>{assignee.email}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                         <Button 
-                            type="submit" 
+                            onClick={onSubmit} 
                             className="w-full"
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? "Sending..." : "Submit"}
                         </Button>
-                    </form>
+                    </div>
                 </CardContent>
             </Card>
             
