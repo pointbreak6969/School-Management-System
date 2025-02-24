@@ -48,10 +48,10 @@ const page = () => {
           variant: "destructive",
         });
       } else {
-        router.push("/Profile");
+        router.push("/admin");
       }
     } catch (error) {
-      console.error('Error during sign-up:', error);
+     
   
       toast({
         title: 'Sign Up Failed',

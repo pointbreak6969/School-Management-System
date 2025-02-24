@@ -5,7 +5,6 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request , secret: process.env.SECRET});
   const url = request.nextUrl;
-  console.log(token);
   if (
     token &&
     (url.pathname.startsWith('/signin') ||

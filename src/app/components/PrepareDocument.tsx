@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import SignatureCanvas from "react-signature-canvas";
+import ReactSignatureCanvas from 'react-signature-canvas';
 import { Download } from 'lucide-react';
 
 const PrepareDocument = () => {
@@ -17,7 +17,7 @@ const PrepareDocument = () => {
   });
   const [signature, setSignature] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const sigCanvas = useRef<SignatureCanvas>(null);
+  const sigCanvas = useRef<ReactSignatureCanvas>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
   const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
@@ -127,7 +127,7 @@ const PrepareDocument = () => {
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 block">Signature</label>
             <div className="border-2 rounded-lg p-3 bg-white hover:border-teal-400 transition-colors duration-200">
-              <SignatureCanvas
+              <ReactSignatureCanvas
                 ref={sigCanvas}
                 canvasProps={{
                   className: 'signature-canvas w-full h-32 border rounded-md bg-gray-50'

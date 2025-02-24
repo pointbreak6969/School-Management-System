@@ -29,19 +29,19 @@ const Page = () => {
   ];
 
   const handleCopy = (id: string) => {
-    console.log(`Copy document with ID: ${id}`);
+
   };
 
   const handleView = (id: string) => {
-    console.log(`View document with ID: ${id}`);
+
   };
 
   const handleSign = (id: string) => {
-    console.log(`Sign document with ID: ${id}`);
+ 
   };
 
   const handleDelete = (id: string) => {
-    console.log(`Delete document with ID: ${id}`);
+
   };
 
   return (
