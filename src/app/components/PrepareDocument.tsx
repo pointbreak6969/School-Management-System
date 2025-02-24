@@ -1,14 +1,37 @@
 "use client";
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, ChangeEvent } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import ReactSignatureCanvas from 'react-signature-canvas';
-import { Download } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import SignatureCanvas from "react-signature-canvas";
+import { Download, Send, FileCheck } from 'lucide-react';
 
-const PrepareDocument = () => {
-  const [formData, setFormData] = useState({
+interface Assignee {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface SigningStatus extends Assignee {
+  signedAt: string | null;
+}
+
+interface FormData {
+  title: string;
+  to: string;
+  subject: string;
+  body: string;
+  date: string;
+}
+
+interface PrepareDocumentProps {
+  assignees?: Assignee[];
+}
+
+const PrepareDocument: React.FC<PrepareDocumentProps> = ({ assignees = [] }) => {
+  const [formData, setFormData] = useState<FormData>({
     title: '',
     to: '',
     subject: '',
@@ -17,10 +40,24 @@ const PrepareDocument = () => {
   });
   const [signature, setSignature] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-  const sigCanvas = useRef<ReactSignatureCanvas>(null);
+  const [signingStatus, setSigningStatus] = useState<SigningStatus[]>([]);
+  const sigCanvas = useRef<SignatureCanvas>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
-  const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
+  // Initialize signing status when component mounts or assignees change
+  React.useEffect(() => {
+    if (assignees?.length) {
+      setSigningStatus(
+        assignees.map(assignee => ({
+          ...assignee,
+          status: 'pending',
+          signedAt: null
+        }))
+      );
+    }
+  }, [assignees]);
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -35,7 +72,9 @@ const PrepareDocument = () => {
 
   const saveSignature = () => {
     if (!sigCanvas.current?.isEmpty()) {
-      setSignature(sigCanvas.current!.toDataURL());
+      if (sigCanvas.current) {
+        setSignature(sigCanvas.current.toDataURL());
+      }
     }
   };
 
@@ -43,9 +82,18 @@ const PrepareDocument = () => {
     setShowPreview(true);
   };
 
+  const sendForSigning = async () => {
+    // Simulate sending document for signing
+    setSigningStatus(prev =>
+      prev.map(user => ({
+        ...user,
+        status: 'sent'
+      }))
+    );
+  };
+
   const generatePDF = async () => {
     if (previewRef.current) {
-      // Dynamically import html2pdf
       const html2pdf = (await import('html2pdf.js')).default;
       
       const opt = {
@@ -68,7 +116,6 @@ const PrepareDocument = () => {
           <CardTitle className="text-2xl font-bold">Agreement Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 p-6">
-          {/* Previous form content remains the same */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 block">Title</label>
             <Input
@@ -161,68 +208,108 @@ const PrepareDocument = () => {
             >
               View Document
             </Button>
-
-            {showPreview && (
-              <Button 
-                className="w-full bg-teal-700 hover:bg-teal-800 transition-colors duration-200 text-lg py-6 flex items-center justify-center gap-2" 
-                onClick={generatePDF}
-              >
-                <Download size={24} />
-                Save as PDF
-              </Button>
-            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Preview Section */}
+      {/* Preview and Signing Section */}
       {showPreview && (
-        <Card className="w-2/3 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardContent className="p-8">
-            <div ref={previewRef} className="max-w-3xl mx-auto">
-              <div className="">
-                <h1 className="font-bold text-center text-teal-800">{formData.title}</h1>
-              </div>
-              
-              <div className="space-y-6">
-                <div className="text-right">
-                  <p className="text-gray-600">{formData.date}</p>
+        <div className="w-2/3 space-y-6">
+          {/* Document Preview */}
+          <Card className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <CardContent className="p-8">
+              <div ref={previewRef} className="max-w-3xl mx-auto">
+                <div className="">
+                  <h1 className="font-bold text-center text-teal-800">{formData.title}</h1>
                 </div>
                 
-                <div className="space-y-2">
-                  <p className="text-gray-800">To,<br/><span className="font-semibold">{formData.to}</span></p>
-                </div>
-                
-                <div className="p-4 rounded-lg">
-                  <p className="font-semibold text-gray-800">Subject: {formData.subject}</p>
-                </div>
-                
-                <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                  {formData.body}
-                </div>
-              </div>
-
-              <div className="mt-16">
-                {signature && (
-                  <div className="flex justify-evenly -mt-5">
-                    <div className="w-64 text-center">
-                      <div>
-                        <img src={signature} alt="Signature" className="h-16 mx-auto" />
-                        <p className="text-sm mt-2 font-medium text-gray-600 border-t-2 border-gray-300 mb-3">Authorized Signature</p>
-                      </div>
-                    </div>
-                    <div className="w-64 text-center">
-                      <div>
-                        <div className="h-16" />
-                        <p className="text-sm mt-2 font-medium text-gray-600 border-t-2 border-gray-300 mb-3">Client Signature</p>
-                      </div>
-                    </div>
+                <div className="space-y-6">
+                  <div className="text-right">
+                    <p className="text-gray-600">{formData.date}</p>
                   </div>
-                )}
+                  
+                  <div className="space-y-2">
+                    <p className="text-gray-800">To,<br/><span className="font-semibold">{formData.to}</span></p>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg">
+                    <p className="font-semibold text-gray-800">Subject: {formData.subject}</p>
+                  </div>
+                  
+                  <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                    {formData.body}
+                  </div>
+                </div>
+
+                <div className="mt-16">
+                  {signature && (
+                    <div className="flex justify-evenly -mt-5">
+                      <div className="w-64 text-center">
+                        <div>
+                          <img src={signature} alt="Signature" className="h-16 mx-auto" />
+                          <p className="text-sm mt-2 font-medium text-gray-600 border-t-2 border-gray-300 mb-3">Authorized Signature</p>
+                        </div>
+                      </div>
+                      <div className="w-64 text-center">
+                        <div>
+                          <div className="h-16" />
+                          <p className="text-sm mt-2 font-medium text-gray-600 border-t-2 border-gray-300 mb-3">Client Signature</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Signing Workflow Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileCheck className="text-teal-600" />
+                Document Signing Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Signed Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {signingStatus.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.signedAt || '2025-02-08'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              <div className="mt-6 flex justify-end gap-4">
+                <Button
+                  onClick={generatePDF}
+                  className="bg-gray-600 hover:bg-gray-700 flex items-center gap-2"
+                >
+                  <Download size={18} />
+                  Save as PDF
+                </Button>
+                <Button
+                  onClick={sendForSigning}
+                  className="bg-teal-600 hover:bg-teal-700 flex items-center gap-2"
+                >
+                  <Send size={18} />
+                  Send for Signing
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );

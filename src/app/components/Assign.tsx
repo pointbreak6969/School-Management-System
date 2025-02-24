@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserPlus, Mail, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Assignee {
   id: number;
@@ -25,7 +26,7 @@ const Assign: React.FC = () => {
   const [displayName, setDisplayName] = useState<string>("");
   const [assignees, setAssignees] = useState<Assignee[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
-
+  const router=useRouter()
   const usersPerPage = 3; 
   const pageCount = Math.ceil(assignees.length / usersPerPage);
 
@@ -44,8 +45,7 @@ const Assign: React.FC = () => {
   };
 
   const handleContinue = () => {
-    if (assignees.length === 0) {
-    }
+    router.push('/preparation')
   };
 
   const handlePageChange = (pageIndex: number) => {
