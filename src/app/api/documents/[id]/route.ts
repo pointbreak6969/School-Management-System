@@ -106,7 +106,7 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error deleting document:", error);
+ 
     return Response.json(
       {
         success: false,

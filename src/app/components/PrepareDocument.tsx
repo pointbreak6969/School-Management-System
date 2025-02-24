@@ -174,7 +174,7 @@ const PrepareDocument: React.FC<PrepareDocumentProps> = ({ assignees = [] }) => 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 block">Signature</label>
             <div className="border-2 rounded-lg p-3 bg-white hover:border-teal-400 transition-colors duration-200">
-              <SignatureCanvas
+              <ReactSignatureCanvas
                 ref={sigCanvas}
                 canvasProps={{
                   className: 'signature-canvas w-full h-32 border rounded-md bg-gray-50'

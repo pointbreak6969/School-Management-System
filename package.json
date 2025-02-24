@@ -17,6 +17,8 @@
     "@radix-ui/react-select": "^2.1.6",
     "@radix-ui/react-slot": "^1.1.2",
     "@radix-ui/react-toast": "^1.2.6",
+    "@tinymce/tinymce-react": "^6.0.0",
+    "@types/formidable": "^3.4.5",
     "@types/mongodb": "^4.0.6",
     "axios": "^1.7.9",
     "bcryptjs": "^3.0.0",
@@ -38,6 +40,7 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
+    "tinymce": "^7.7.0",
     "usehooks-ts": "^3.1.1",
     "uuid": "^11.0.5",
     "zod": "^3.24.2"
