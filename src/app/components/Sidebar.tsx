@@ -1,7 +1,8 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Home, FileText } from "lucide-react";
+import { Home, FileText, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 const Sidebar = () => {
   return (
@@ -14,11 +15,19 @@ const Sidebar = () => {
           </Button>
         </Link>
         <Link href="/signedlist">
-          <Button variant="ghost" className="w-full justify-start gap-2  text-green-800 font-bold text-lg">
+          <Button variant="ghost" className="w-full justify-start gap-2 text-green-800 font-bold text-lg">
             <FileText className="h-4 w-4" />
             Signed Documents
           </Button>
         </Link>
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-2 text-red-800 font-bold text-lg mt-auto"
+          onClick={() => signOut()}
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
       </nav>
     </aside>
   );
