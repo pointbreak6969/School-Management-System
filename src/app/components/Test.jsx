@@ -7,9 +7,20 @@ const Test = ({setEditorContent}) => {
   const editorRef = useRef(null);
   const createImageField = () => {
     editorRef.current?.insertContent(`
-      <div class="field-container" style="display: inline-block; margin: 10px 0;">
-        <div class="image-field" contenteditable="false"
-             style="width: 100px; height: 100px;
+      <div class="field-container" contenteditable="false" style="
+           display: inline-block; 
+           width: 150px;
+           margin: 10px 4px;
+           vertical-align: top;
+           resize: both;
+           border: 1px dashed #ccc;
+           position: relative;
+           cursor: move;
+           min-height: 150px;
+           min-width: 100px;
+           max-width: 100%;">
+        <div class="image-field" 
+             style="width: 100%; height: 100px;
                     border: 2px dashed #ccc; margin-bottom: 5px;">
           <div class="upload-prompt"
                style="width: 100%; height: 100%; display: flex;
@@ -17,10 +28,11 @@ const Test = ({setEditorContent}) => {
             Click to upload image
           </div>
         </div>
-        <div class="signature-container" style="width: 150px; text-align: center;">
-          <div class="signature-line"></div>
-          <p class="signature-text" style="margin: 5px 0 0 0;">Sign here</p>
+        <div class="signature-container" style="width: 100%; text-align: center;">
+          <div class="signature-line" style="width: 100%; height: 2px; background-color: black; margin: 0 auto;"></div>
+          <p class="signature-text" style="margin: 5px 0 0 0; font-size: 14px; color: #666;">Sign here</p>
         </div>
+        <div class="resize-handle" style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; cursor: nwse-resize;"></div>
       </div>
     `);
   };
@@ -32,16 +44,18 @@ const Test = ({setEditorContent}) => {
         onInit={(evt, editor) => {
           editorRef.current = editor;
           editor.on('click', (e) => {
-            const clickedEl = e.target ;
-            const container = clickedEl.closest('.image-field');
+            const clickedEl = e.target;
+            // Look for either the image field or any of its parents up to field-container
+            const container = clickedEl.closest('.field-container');
             if (container) {
-              const existingImage = container.querySelector('img');
+              const imageField = container.querySelector('.image-field');
+              const existingImage = imageField.querySelector('img');
               if (!existingImage) {
                 const input = document.createElement('input');
                 input.type = 'file';
                 input.accept = 'image/*';
                 input.onchange = (ev) => {
-                  const file = (ev.target ).files?.[0];
+                  const file = ev.target.files?.[0];
                   if (file) {
                     const reader = new FileReader();
                     reader.onload = () => {
@@ -51,7 +65,7 @@ const Test = ({setEditorContent}) => {
                       img.style.width = "100%";
                       img.style.height = "100%";
                       img.style.objectFit = "contain";
-                      container.querySelector('.upload-prompt')?.replaceWith(img);
+                      imageField.querySelector('.upload-prompt')?.replaceWith(img);
                     };
                     reader.readAsDataURL(file);
                   }
@@ -66,24 +80,22 @@ const Test = ({setEditorContent}) => {
           width: "100%",
           plugins: [
             'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists',
-            'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-            'checklist', 'mediaembed', 'casechange', 'export', 'formatpainter', 'pageembed',
-            'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable',
-            'advcode', 'editimage', 'advtemplate', 'mentions',
             'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography',
             'inlinecss', 'markdown', 'importword'
           ],
+          noneditable_noneditable_class: 'field-container',
+          extended_valid_elements: 'div[*]',
           draggable_modal: true,
           toolbar: 'undo redo | insertfield | blocks fontfamily fontsize | bold italic underline strikethrough | ' +
             'link image media table mergetags | addcomment showcomments | spellcheckdialog ' +
             'a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | ' +
-            'emoticons charmap | removeformat | add_signature | help',
+            'emoticons charmap | removeformat | help',
           // Add image upload handler
           images_upload_handler: (blobInfo) =>
             new Promise(resolve => {
               const reader = new FileReader();
               reader.readAsDataURL(blobInfo.blob());
-              reader.onload = () => resolve(reader.result );
+              reader.onload = () => resolve(reader.result);
             }),
           content_css: false,
           content_style: `
@@ -96,7 +108,7 @@ const Test = ({setEditorContent}) => {
             .tox-statusbar__branding {
               display: none;
             }
-               img { 
+            img { 
               display: inline-block !important; 
               max-width: 100%; 
               height: auto;
@@ -106,7 +118,15 @@ const Test = ({setEditorContent}) => {
             .field-container {
               display: inline-block;
               vertical-align: top;
-              margin: 10px;
+              margin: 10px 4px;
+              user-select: all;
+              -webkit-user-select: all;
+              resize: both;
+              border: 1px dashed #ccc;
+            }
+            /* Highlight when selected */
+            .field-container:hover {
+              border: 1px dashed #0088cc !important;
             }
             .image-field { 
               vertical-align: text-top;
@@ -117,11 +137,11 @@ const Test = ({setEditorContent}) => {
               margin: 2px !important;
             }
             .signature-container {
-              width: 150px;
+              width: 100%;
               text-align: center;
             }
             .signature-line {
-              width: 150px;
+              width: 100%;
               height: 2px;
               background-color: black;
               margin: 0 auto;
