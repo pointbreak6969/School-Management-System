@@ -3,19 +3,22 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Download } from "lucide-react";
+import { FileSignature } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 interface Document {
   _id: string;
   email: string;
   document: string;
   signed: boolean;
+  signedBy: string[];
   createdAt: string;
 }
 
 const Page = () => {
+  const { data: session } = useSession();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,8 +29,11 @@ const Page = () => {
         
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
-        const signedDocuments = data.filter((doc: Document) => doc.signed);
-        setDocuments(signedDocuments);
+        const unsignedDocuments = data.filter((doc: Document) => 
+           doc.signedBy.includes(session?.user?.email)
+        );
+        console.log(unsignedDocuments);
+        setDocuments(unsignedDocuments);
       } catch (error) {
         console.error('Error fetching documents:', error);
       } finally {
@@ -36,28 +42,7 @@ const Page = () => {
     };
 
     fetchDocuments();
-  }, []);
-
-  const handleView = (id: string) => {
-    window.open(`/view/${id}`, '_blank');
-  };
-
-  const handleDownload = async (id: string) => {
-    try {
-      const response = await fetch(`/api/documents/${id}/download`);
-      if (!response.ok) throw new Error('Failed to download');
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    } catch (error) {
-      console.error('Error downloading document:', error);
-    }
-  };
+  }, [session]);
 
   if (loading) {
     return (
@@ -72,7 +57,7 @@ const Page = () => {
       <Sidebar />
       <div className="flex-grow p-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Signed Documents</h1>
+          <h1 className="text-3xl font-bold">Documents to Sign</h1>
           <Button><Link href={'/assign'}>New Contracts</Link></Button>
         </div>
 
@@ -93,17 +78,14 @@ const Page = () => {
                 <TableCell>{doc.email}</TableCell>
                 <TableCell>{new Date(doc.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>
-                  <Badge variant={doc.signed ? "default" : "destructive"}>
-                    {doc.signed ? "Signed" : "Pending"}
+                  <Badge variant={"default"}>
+                    Success
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleView(doc._id)}>
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDownload(doc._id)}>
-                      <Download className="h-4 w-4" />
+                    <Button variant="ghost" size="icon">
+                      <Link href={`/usersign/${doc._id}`}><FileSignature className="h-4 w-4" /></Link>
                     </Button>
                   </div>
                 </TableCell>

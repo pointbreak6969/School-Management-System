@@ -3,19 +3,22 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Eye, FileSignature, Trash2, Copy } from "lucide-react";
+import { FileSignature } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 interface Document {
   _id: string;
   email: string;
   document: string;
   signed: boolean;
+  signedBy: string[];
   createdAt: string;
 }
 
 const Page = () => {
+  const { data: session } = useSession();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +29,10 @@ const Page = () => {
         
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
-        const unsignedDocuments = data.filter((doc: Document) => !doc.signed);
+        const unsignedDocuments = data.filter((doc: Document) => 
+           !doc.signedBy.includes(session?.user?.email)
+        );
+        console.log(unsignedDocuments);
         setDocuments(unsignedDocuments);
       } catch (error) {
         console.error('Error fetching documents:', error);
@@ -36,8 +42,8 @@ const Page = () => {
     };
 
     fetchDocuments();
-  }, []);
- 
+  }, [session]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -72,22 +78,15 @@ const Page = () => {
                 <TableCell>{doc.email}</TableCell>
                 <TableCell>{new Date(doc.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>
-                  <Badge variant={doc.signed ? "outline" : "destructive"}>
-                    {doc.signed ? "Signed" : "Pending"}
+                  <Badge variant={"destructive"}>
+                    Pending
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    {/* <Button variant="ghost" size="icon" onClick={() => handleCopy(doc._id)}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleView(doc._id)}>
-                      <Eye className="h-4 w-4" />
-                    </Button> */}
                     <Button variant="ghost" size="icon">
                       <Link href={`/usersign/${doc._id}`}><FileSignature className="h-4 w-4" /></Link>
                     </Button>
-                    
                   </div>
                 </TableCell>
               </TableRow>
