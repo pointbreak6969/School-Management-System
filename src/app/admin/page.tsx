@@ -37,15 +37,6 @@ const Page = () => {
 
     fetchDocuments();
   }, []);
-
-  const handleCopy = async (id: string) => {
-   
-  };
-
-  const handleView = (id: string) => {
-   
-  };
-
  
   if (loading) {
     return (
@@ -87,12 +78,12 @@ const Page = () => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleCopy(doc._id)}>
+                    {/* <Button variant="ghost" size="icon" onClick={() => handleCopy(doc._id)}>
                       <Copy className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => handleView(doc._id)}>
                       <Eye className="h-4 w-4" />
-                    </Button>
+                    </Button> */}
                     <Button variant="ghost" size="icon">
                       <Link href={`/usersign/${doc._id}`}><FileSignature className="h-4 w-4" /></Link>
                     </Button>
