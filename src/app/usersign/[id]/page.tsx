@@ -2,17 +2,27 @@
 import React, { useEffect, useState } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+
 import { Button } from '@/components/ui/button';
 import { useParams } from 'next/navigation';
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useSession } from 'next-auth/react';
 
+interface DocumentPayload {
+    email: string | null | undefined;
+    document: string;
+}
 const DocumentEditorPage = () => {
     const params = useParams();
+    const router = useRouter();
     const id = params.id;
-    const [document, setDocumentDetails] = useState({});
+    const { data: session } = useSession();
+    const [documentDetails, setDocumentDetails] = useState<any>({});
     const [content, setContent] = useState(''); // To hold the HTML content
-
+    const [editorContent, setEditorContent] = useState(''); // To hold the TinyMCE editor content   
+    const [isSubmitting, setIsSubmitting] = useState(false);
     useEffect(() => {
         const getDocumentDetails = async () => {
             try {
@@ -34,12 +44,38 @@ const DocumentEditorPage = () => {
         getDocumentDetails();
     }, [id]);
 
+    const onSubmit = async () => {
+        if (!editorContent) {
+            toast.error("Please add some content to the document");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const payload: DocumentPayload = {
+                email: session?.user?.email,
+                document: editorContent,
+            }
+            await axios.patch(`/api/documents/${id}`, payload);
+            toast.success("Document sent successfully!");
+            router.push("/admin");
+        } catch (error) {
+            const axiosError = error as AxiosError;
+            const errorMessage =
+                (axiosError.response?.data as { message?: string })?.message ||
+                "Failed to send document";
+            toast.error(errorMessage);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <div className="flex min-h-screen bg-gray-50">
             {/* Left Side - Recipients */}
             <div className="w-1/4 p-6 border-r border-gray-200">
                 <Card className="p-6">
-                    <h2 className="text-xl font-semibold mb-6">Selected Recipients</h2>
+                    <h2 className="text-xl font-semibold mb-6">Sent By:</h2>
                     <form>
                         <div className="space-y-4">
                             <div>
@@ -49,19 +85,12 @@ const DocumentEditorPage = () => {
                                 >
                                     Email
                                 </label>
-                                <Input
-                                    type="email"
-                                    id="email"
-                                    placeholder="hello@gmail.com"
-                                    className="w-full"
-                                    required
-                                />
+                                <label htmlFor="sent">
+                                    {documentDetails.email}
+                                </label>
                             </div>
-                            <Button
-                                type="submit"
-                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-                            >
-                                Submit
+                            <Button onClick={onSubmit} className="w-full" disabled={isSubmitting}>
+                                {isSubmitting ? "Sending..." : "Submit"}
                             </Button>
                         </div>
                     </form>
@@ -97,22 +126,129 @@ const DocumentEditorPage = () => {
                     {/* TinyMCE Editor */}
                     <div className="p-4 min-h-[500px]">
                         <Editor
-                                apiKey="bymsij3uljgasv6dt4zp6vo90nh1pdeo1pjpakx69osd1dh1"
+                            apiKey="bymsij3uljgasv6dt4zp6vo90nh1pdeo1pjpakx69osd1dh1"
                             value={content} // Pass the loaded HTML content
                             init={{
                                 height: 500,
                                 menubar: true,
+                                // Match plugins with the sender's configuration
                                 plugins: [
-                                    'advlist autolink lists link image charmap preview anchor',
-                                    'searchreplace visualblocks code fullscreen',
-                                    'insertdatetime media table code help wordcount'
+                                    'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists',
+                                    'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
+                                    'checklist', 'mediaembed', 'casechange', 'export', 'formatpainter', 'pageembed',
+                                    'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable',
+                                    'advcode', 'editimage', 'advtemplate', 'mentions',
+                                    'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography',
+                                    'inlinecss', 'markdown', 'importword'
                                 ],
-                                toolbar:
-                                    'undo redo | formatselect | bold italic backcolor | ' +
-                                    'alignleft aligncenter alignright alignjustify | ' +
-                                    'bullist numlist outdent indent | removeformat | help',
+                                toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | ' +
+                                    'link image media table mergetags | spellcheckdialog ' +
+                                    'a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | ' +
+                                    'emoticons charmap | removeformat | help',
+                                // Add image upload handler
+                                images_upload_handler: (blobInfo) =>
+                                    new Promise<string>(resolve => {
+                                        const reader = new FileReader();
+                                        reader.readAsDataURL(blobInfo.blob());
+                                        reader.onload = () => resolve(reader.result as string);
+                                    }),
+                                // Enhanced content_style to hide branding
+                                content_style: `
+            body { 
+              margin: 0;
+              padding: 16px;
+              max-width: 100%;
+              min-height: 100vh;
+            }
+            .tox-statusbar__branding {
+              display: none !important;
+            }
+            .tox-statusbar__text-container {
+              display: none !important;
+            }
+            .tox-statusbar__path-item {
+              display: none;
+            }
+            img { 
+              display: inline-block !important; 
+              max-width: 100%; 
+              height: auto;
+              vertical-align: middle;
+              margin: 2px;
+            }
+            .field-container {
+              display: inline-block;
+              vertical-align: top;
+              margin: 10px;
+            }
+            .image-field { 
+              vertical-align: text-top;
+              margin-bottom: 5px;
+            }
+            figure.image { 
+              display: inline-block !important;
+              margin: 2px !important;
+            }
+            .signature-container {
+              width: 150px;
+              text-align: center;
+            }
+            .signature-line {
+              width: 150px;
+              height: 2px;
+              background-color: black;
+              margin: 0 auto;
+            }
+            .signature-text {
+              font-size: 14px;
+              color: #666;
+              margin: 5px 0 0 0;
+            }
+          `,
+                                // Add these settings to hide branding
+                                statusbar: false,
+                                branding: false,
+                                promotion: false,
+                                // Setup click handler for image fields
+                                setup: (editor) => {
+                                    editor.on('click', (e) => {
+                                        const clickedEl = e.target;
+                                        const container = clickedEl.closest('.image-field');
+                                        if (container) {
+                                            const existingImage = container.querySelector('img');
+                                            if (!existingImage) {
+                                                const input = document.createElement('input');
+                                                input.type = 'file';
+                                                input.accept = 'image/*';
+                                                input.onchange = (ev: Event) => {
+                                                    const target = ev.target as HTMLInputElement;
+                                                    const file = target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onload = () => {
+                                                            const img = window.document.createElement('img');
+                                                            img.src = reader.result as string;
+                                                            img.alt = "Uploaded Image";
+                                                            img.style.width = "100%";
+                                                            img.style.height = "100%";
+                                                            img.style.objectFit = "contain";
+                                                            container.querySelector('.upload-prompt')?.replaceWith(img);
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                };
+                                                input.click();
+                                            }
+                                        }
+                                    });
+                                },
+                                // Add these settings to match sender's configuration
+                                powerpaste_word_import: 'clean',
+                                powerpaste_html_import: 'clean',
+                                // Set readonly if you want to prevent editing at the receiver end
+                                // readonly: true, // Uncomment if you want view-only
                             }}
-                            onEditorChange={(newContent) => setContent(newContent)} // Update content on change
+                            onEditorChange={(content) => setEditorContent(content)}
                         />
                     </div>
                 </div>

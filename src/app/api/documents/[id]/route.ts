@@ -7,7 +7,7 @@ export async function GET(
   context: { params: { id: string } }
 ) {
   await connectDb();
-  const { id } = context.params; // ✅ Correct destructuring
+  const id = context.params.id; // ✅ Direct access to avoid error
 
   try {
     const document = await PdfModel.findById(id);
@@ -35,10 +35,20 @@ export async function PATCH(
   context: { params: { id: string } }
 ) {
   await connectDb();
-  const { id } = context.params;
+  const id = context.params.id; // ✅ Direct access to avoid error
 
   try {
-    const { email, xfdfSigned } = await request.json();
+    const requestData = await request.json();
+    const { email, newDocument } = requestData;
+    
+    // Check if required fields are present
+    if (!email) {
+      return NextResponse.json(
+        { success: false, message: "Email is required" },
+        { status: 400 }
+      );
+    }
+
     const document = await PdfModel.findById(id);
 
     if (!document) {
@@ -55,17 +65,33 @@ export async function PATCH(
       );
     }
 
-    document.xfdf.push(xfdfSigned);
     document.signedBy.push(email);
 
     if (document.signedBy.length === document.emails.length) {
       document.signed = true;
     }
+    
+    // Only update document content if newDocument is provided
+    if (newDocument !== undefined) {
+      document.document = newDocument;
+    }
+    
+    // Use updateOne with runValidators:false to bypass the required field validation
+    // if we're not updating that field
+    await PdfModel.updateOne(
+      { _id: id },
+      { 
+        signedBy: document.signedBy,
+        signed: document.signed,
+        ...(newDocument !== undefined ? { document: newDocument } : {})
+      },
+      { runValidators: false }
+    );
 
-    await document.save();
+    const updatedDoc = await PdfModel.findById(id);
 
     return NextResponse.json(
-      { success: true, message: "Document Signed", data: document },
+      { success: true, message: "Document Signed", data: updatedDoc },
       { status: 200 }
     );
   } catch (error) {
@@ -82,7 +108,7 @@ export async function DELETE(
   context: { params: { id: string } }
 ) {
   await connectDb();
-  const { id } = context.params;
+  const id = context.params.id; // ✅ Direct access to avoid error
 
   try {
     const document = await PdfModel.findByIdAndDelete(id);
