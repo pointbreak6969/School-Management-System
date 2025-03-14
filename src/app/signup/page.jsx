@@ -1,12 +1,12 @@
 "use client";
 import Link from "next/link";
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { signUpSchema } from "@/schemas/signUpSchema";
+import { signUpSchema } from "../../schemas/signUpSchema";
 import * as zod from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";

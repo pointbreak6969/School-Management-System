@@ -7,10 +7,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as zod from "zod";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { signInSchema } from "@/schemas/signInSchema";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { signInSchema } from "../../schemas/signInSchema";
 const Page = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
