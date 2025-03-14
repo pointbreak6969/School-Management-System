@@ -6,7 +6,7 @@ import PDFRenderer from './PdfRenderer';
 import PageControls from './PageControl';
 import SelectionTools from './SectionTool';
 import SelectionList from './SectionList';
-import { usePDF } from '@/lib/userPdf';
+import { usePDF } from '../lib/userPdf';
 
 export default function PDFViewer() {
   const { 

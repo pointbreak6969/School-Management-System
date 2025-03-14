@@ -1,5 +1,5 @@
 'use client'
-import PDFViewer from "@/components/PdfViewer";
+import PDFViewer from "../components/PdfViewer";
 
 export default function Home() {
   return (
