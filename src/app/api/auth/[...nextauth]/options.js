@@ -25,7 +25,7 @@ export const authOptions = {
                     if (!isPasswordCorrect) {
                         throw new Error("Password is incorrect")
                     }
-                    return {email: user.email, username: user.username}
+                    return user
                 } catch (error) {
                     console.error("Error in authorize function:", error);
                     throw new Error("An error occurred during authorization. Please try again.")

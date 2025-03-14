@@ -11,11 +11,13 @@ export function usePDF() {
   const [currentPage, setCurrentPage] = useState(1);
   const [scale, setScale] = useState(1.5);
   const [isLoading, setIsLoading] = useState(false);
+  const [originalPdf, setOriginalPdf] = useState(null);
 
   const loadPDF = useCallback(async (file) => {
     if (!file || file.type !== "application/pdf") return;
 
     setSelectedFile(file);
+    setOriginalPdf(file); // Store the original file
     setIsLoading(true);
 
     try {
@@ -59,5 +61,6 @@ export function usePDF() {
     loadPDF,
     changePage,
     changeScale,
+    originalPdf, // Return the original PDF file
   };
 }
