@@ -5,7 +5,7 @@ import Document from "@/models/document.model";
 export async function GET(req, { params }) {
     try {
         
-        const documentId = params.id;
+        const documentId = await params.id;
         await connectDb();
       console.log("Fetching document with ID:", documentId); // For debugging
       
