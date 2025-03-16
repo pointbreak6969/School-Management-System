@@ -15,7 +15,7 @@ export async function POST(req) {
     const receivers = data.getAll("receivers");
     const signatureField = JSON.parse(data.get("signatureField"));
 
-    if (!file || !title || !Semail || !Remail || !signatureField) {
+    if (!file || !title || !sender || !receivers || !signatureField) {
       return NextResponse.json(
         {
           success: false,
