@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(req) {
   await connectDb();
+  console.log("Database connected successfully");
 
   try {
     const token = await getToken({ req, secret: process.env.NEXT_SECRET });
@@ -21,13 +22,28 @@ export async function GET(req) {
     }
 
     const userEmail = token.email;
-
     const query = {
-      recievers: userEmail,
-      signedBy: { $ne: userEmail },
+      receivers: { $in: [userEmail] }, 
+      signedBy: { $ne: userEmail },  
     };
 
+    console.log("Query:", query);
+
     const documents = await Document.find(query);
+
+    if (documents.length === 0) {
+      console.log("No matching documents found");
+      return NextResponse.json(
+        {
+          success: true,
+          message: "No unsigned documents found",
+          data: [],
+        },
+        {
+          status: 200,
+        }
+      );
+    }
 
     return NextResponse.json(
       {

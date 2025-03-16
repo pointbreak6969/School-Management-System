@@ -11,9 +11,11 @@ import { useForm, Controller, useFieldArray } from "react-hook-form";
 import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function PDFViewer() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     pdfDocument,
@@ -49,7 +51,7 @@ export default function PDFViewer() {
       const formData = new FormData();
       formData.append("file", originalPdf);
       formData.append("title", data.title);
-      formData.append("sender", data.sender);
+      formData.append("sender", data.sender || userEmail);
       formData.append("receivers", JSON.stringify(data.receivers));
       console.log(data.receivers);
       const formattedSelections = savedSelections.map(selection => ({
@@ -105,6 +107,13 @@ export default function PDFViewer() {
     setSelection(null);
   };
 
+  const [userEmail, setUserEmail] = useState("");
+
+  useEffect(() => {
+    if (session && session.user && session.user.email) {
+      setUserEmail(session.user.email);
+    }
+  }, [session]);
   return (
     <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
       <h1 className="text-2xl font-bold mb-6 text-center text-gray-800 border-b pb-4">
@@ -142,9 +151,10 @@ export default function PDFViewer() {
               </label>
               <input
                 type="text"
+                value={userEmail}
                 {...register("sender")}
                 className="w-full p-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter sender name"
+              
               
               />
             </div>

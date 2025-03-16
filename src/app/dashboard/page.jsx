@@ -72,7 +72,7 @@ const Page = () => {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="icon">
-                        <Link href={`/usersign/${doc._id}`}>
+                        <Link href={`/userSign/${doc._id}`}>
                           <FileSignature className="h-4 w-4" />
                         </Link>
                       </Button>
