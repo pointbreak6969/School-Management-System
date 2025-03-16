@@ -5,8 +5,6 @@ import { NextResponse } from "next/server";
 
 export async function GET(req) {
   await connectDb();
-  console.log("Database connected successfully");
-
   try {
     const token = await getToken({ req, secret: process.env.NEXT_SECRET });
     if (!token || !token.email) {
@@ -20,17 +18,12 @@ export async function GET(req) {
         }
       );
     }
-
     const userEmail = token.email;
     const query = {
       receivers: { $in: [userEmail] }, 
       signedBy: { $ne: userEmail },  
     };
-
-    console.log("Query:", query);
-
     const documents = await Document.find(query);
-
     if (documents.length === 0) {
       console.log("No matching documents found");
       return NextResponse.json(

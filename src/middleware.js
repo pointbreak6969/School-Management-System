@@ -11,7 +11,7 @@ export default async function middleware(req) {
 
     // Get token for either case
     const token = await getToken({ req, secret: process.env.NEXT_SECRET });
-
+    
     // 2. Handle protected routes - redirect to signin if not authenticated
     if (isProtectedRoute) {
         if (!token) {
