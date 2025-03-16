@@ -12,7 +12,8 @@ export async function POST(req) {
     const file = data.get("file");
     const title = data.get("title");
     const sender = data.get("sender");
-    const receivers = data.getAll("receivers");
+    const receiversData = JSON.parse(data.get("receivers")); 
+    const receivers = receiversData.map((receiver) => receiver.value);
     const signatureField = JSON.parse(data.get("signatureField"));
 
     if (!file || !title || !sender || !receivers || !signatureField) {
@@ -49,7 +50,7 @@ export async function POST(req) {
       title,
       documentRef: filePath,
       sender,
-      receivers,
+      receivers: receivers,
       signatureField,
     });
 
@@ -77,7 +78,7 @@ export async function POST(req) {
   }
 }
 
-export default async function PATCH(req) {
+export  async function PATCH(req) {
   await connectDb();
   try {
     const { id } = req.params;

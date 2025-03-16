@@ -51,6 +51,7 @@ export default function PDFViewer() {
       formData.append("title", data.title);
       formData.append("sender", data.sender);
       formData.append("receivers", JSON.stringify(data.receivers));
+      console.log(data.receivers);
       const formattedSelections = savedSelections.map(selection => ({
         x: selection.x,
         y: selection.y,
@@ -63,7 +64,7 @@ export default function PDFViewer() {
       const response = await axios.post("/api/uploadDocument", formData);
       if (response.data.success) {
         toast.success("Successfully submitted the agreement");
-        router.push("/")
+        router.push("/dashboard")
       }
       
     } catch (error) {
