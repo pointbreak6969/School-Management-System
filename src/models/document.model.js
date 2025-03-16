@@ -57,7 +57,11 @@ const DocumentSchema = new Schema({
     },
   ],
   signatures: [{ type: String }],
-});
+},
+{
+  timestamps:true
+}
+);
 
 // Pre-save middleware to check signing status
 // DocumentSchema.pre('save', function(next) {
