@@ -1,12 +1,12 @@
 "use server";
 
 import Sidebar from "../../components/adminComponents/Sidebar";
-import SignedList from "@/components/adminComponents/SignedList";
+import SignedList from "../../components/adminComponents/SignedList";
 
 async function fetchSignedDocuments() {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/signedDocuments`);
-
+    const response = await fetch(`${process.env.NEXT_URL}/api/signedDocuments`);
+console.log(process.env.NEXT_URL);
     if (!response.ok) {
       console.log("error");
     }
