@@ -29,10 +29,9 @@ export default function PDFViewer() {
     originalPdf,
   } = usePDF();
 
-
   const { control, handleSubmit, register } = useForm({
     defaultValues: {
-      title : ``,
+      title: ``,
       sender: ``,
       receivers: [{ value: "" }], // Initial state with one receiver field
     },
@@ -54,25 +53,23 @@ export default function PDFViewer() {
       formData.append("sender", data.sender || userEmail);
       formData.append("receivers", JSON.stringify(data.receivers));
       console.log(data.receivers);
-      const formattedSelections = savedSelections.map(selection => ({
+      const formattedSelections = savedSelections.map((selection) => ({
         x: selection.x,
         y: selection.y,
         width: selection.width,
         height: selection.height,
-        pageNo: selection.page // Renaming 'page' to 'pageNo' to match schema
+        pageNo: selection.page, // Renaming 'page' to 'pageNo' to match schema
       }));
-      
+
       formData.append("signatureField", JSON.stringify(formattedSelections));
       const response = await axios.post("/api/uploadDocument", formData);
       if (response.data.success) {
         toast.success("Successfully submitted the agreement");
-        router.push("/dashboard")
+        router.push("/dashboard");
       }
-      
     } catch (error) {
       toast.error("Failed to submit the agreement");
-    }
-    finally{
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -141,8 +138,7 @@ export default function PDFViewer() {
                 type="text"
                 {...register("title")}
                 className="w-full p-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter sender name"
-              
+                placeholder="Enter Document Title"
               />
             </div>
             <div className="mb-4">
@@ -154,8 +150,6 @@ export default function PDFViewer() {
                 value={userEmail}
                 {...register("sender")}
                 className="w-full p-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              
-              
               />
             </div>
 
@@ -198,7 +192,7 @@ export default function PDFViewer() {
                       type="text"
                       {...field}
                       className="w-full p-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter receiver name"
+                      placeholder="Enter receiver's email"
                     />
                   )}
                 />
@@ -232,7 +226,7 @@ export default function PDFViewer() {
                 type="submit"
                 className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
               >
-                Submit Form
+                Send Agreement
               </button>
             </div>
           </form>
@@ -262,7 +256,7 @@ export default function PDFViewer() {
                           d="M4 6h16M4 12h16m-7 6h7"
                         />
                       </svg>
-                      Draw Rectangle
+                      Draw Signature Field
                     </button>
                   )}
 
