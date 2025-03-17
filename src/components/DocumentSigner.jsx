@@ -14,7 +14,7 @@ import { PDFDocument } from "pdf-lib"
 import { Separator } from "./ui/separator"
 
 // Helper function to create cropped image
-const createCroppedImage = async (imageSrc, pixelCrop, height, width) => {
+const createCroppedImage = async (imageSrc, pixelCrop) => {
   const image = new Image()
   image.src = imageSrc
   image.crossOrigin = "anonymous"
@@ -24,8 +24,8 @@ const createCroppedImage = async (imageSrc, pixelCrop, height, width) => {
   const ctx = canvas.getContext("2d")
 
   // Set canvas dimensions to desired output size
-  canvas.width = width
-  canvas.height = height
+  canvas.width = 200
+  canvas.height = 90
 
   return new Promise((resolve) => {
     image.onload = () => {
@@ -64,7 +64,7 @@ export default function DocumentSigner() {
     x: 100,
     y: 100,
     width: 200,
-    height: 100,
+    height: 90,
     pageNo: 1,
   })
 
@@ -257,64 +257,6 @@ export default function DocumentSigner() {
                   <span className="text-sm font-medium text-slate-700">Click to upload PDF</span>
                   <span className="text-xs text-slate-500">{documentFile ? documentFile.name : "PDF files only"}</span>
                 </Label>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Signature Position Section */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-medium text-slate-800">Signature Position</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="x" className="text-sm text-slate-700">
-                    X Position
-                  </Label>
-                  <Input id="x" name="x" type="number" value={signaturePosition.x} onChange={handlePositionChange} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="y" className="text-sm text-slate-700">
-                    Y Position
-                  </Label>
-                  <Input id="y" name="y" type="number" value={signaturePosition.y} onChange={handlePositionChange} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="width" className="text-sm text-slate-700">
-                    Width
-                  </Label>
-                  <Input
-                    id="width"
-                    name="width"
-                    type="number"
-                    value={signaturePosition.width}
-                    onChange={handlePositionChange}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="height" className="text-sm text-slate-700">
-                    Height
-                  </Label>
-                  <Input
-                    id="height"
-                    name="height"
-                    type="number"
-                    value={signaturePosition.height}
-                    onChange={handlePositionChange}
-                  />
-                </div>
-                <div className="space-y-2 col-span-2">
-                  <Label htmlFor="pageNo" className="text-sm text-slate-700">
-                    Page Number
-                  </Label>
-                  <Input
-                    id="pageNo"
-                    name="pageNo"
-                    type="number"
-                    min="1"
-                    value={signaturePosition.pageNo}
-                    onChange={handlePositionChange}
-                  />
-                </div>
               </div>
             </div>
 

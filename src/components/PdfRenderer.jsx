@@ -13,10 +13,15 @@ export default function PDFRenderer({
   const canvasRef = useRef(null);
   const overlayCanvasRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-  const [endPos, setEndPos] = useState({ x: 0, y: 0 });
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  
+  // Fixed rectangle size
+  const RECT_WIDTH = 200;
+  const RECT_HEIGHT = 90;
+  
+  // State to track if the rectangle is being dragged
+  const [isDragging, setIsDragging] = useState(false);
+  const [rectPosition, setRectPosition] = useState(null);
 
   // Render the current PDF page
   const renderPage = async () => {
@@ -64,7 +69,7 @@ export default function PDFRenderer({
     if (overlayCanvasRef.current) {
       drawAllSelections();
     }
-  }, [selection, savedSelections]);
+  }, [selection, savedSelections, rectPosition]);
 
   // Draw all selections (current and saved) on the overlay canvas
   const drawAllSelections = () => {
@@ -87,17 +92,14 @@ export default function PDFRenderer({
       drawRectangle(context, selection.x, selection.y, selection.width, selection.height, 'red');
     }
     
-    // Draw rectangle being created
-    if (isDrawing) {
-      const width = endPos.x - startPos.x;
-      const height = endPos.y - startPos.y;
-      
+    // Draw the draggable rectangle at the mouse position in selection mode
+    if (isSelectionMode && rectPosition) {
       drawRectangle(
         context, 
-        Math.min(startPos.x, endPos.x), 
-        Math.min(startPos.y, endPos.y), 
-        Math.abs(width), 
-        Math.abs(height),
+        rectPosition.x, 
+        rectPosition.y, 
+        RECT_WIDTH, 
+        RECT_HEIGHT,
         'red'
       );
     }
@@ -139,41 +141,54 @@ export default function PDFRenderer({
     const coords = getCanvasCoordinates(event);
     setMousePosition(coords);
     
-    if (isDrawing && isSelectionMode) {
-      setEndPos(coords);
+    if (isSelectionMode) {
+      if (isDragging) {
+        // Update the rectangle position while dragging
+        setRectPosition({
+          x: coords.x - (RECT_WIDTH / 2),
+          y: coords.y - (RECT_HEIGHT / 2)
+        });
+      } else if (!selection) {
+        // Preview the rectangle position when hovering
+        setRectPosition({
+          x: coords.x - (RECT_WIDTH / 2),
+          y: coords.y - (RECT_HEIGHT / 2)
+        });
+      }
       drawAllSelections();
     }
   };
   
-  // Handle mouse down event - start drawing
+  // Handle mouse down event - start dragging
   const handleMouseDown = (event) => {
     if (!isSelectionMode) return;
     
     const coords = getCanvasCoordinates(event);
-    setIsDrawing(true);
-    setStartPos(coords);
-    setEndPos(coords);
+    setIsDragging(true);
+    
+    // Center the rectangle at the click position
+    setRectPosition({
+      x: coords.x - (RECT_WIDTH / 2),
+      y: coords.y - (RECT_HEIGHT / 2)
+    });
   };
   
-  // Handle mouse up event - finish drawing
+  // Handle mouse up event - finish placing the rectangle
   const handleMouseUp = () => {
-    if (isDrawing && isSelectionMode) {
-      setIsDrawing(false);
+    if (isDragging && isSelectionMode) {
+      setIsDragging(false);
       
-      // Calculate the rectangle properties
-      const width = Math.abs(endPos.x - startPos.x);
-      const height = Math.abs(endPos.y - startPos.y);
-      
-      if (width > 5 && height > 5) {
+      // Create selection with the fixed-size rectangle
+      if (rectPosition) {
         const newSelection = {
-          x: Math.min(startPos.x, endPos.x),
-          y: Math.min(startPos.y, endPos.y),
-          width,
-          height,
-          page: currentPage
+          x: rectPosition.x,
+          y: rectPosition.y,
+          width: RECT_WIDTH,
+          height: RECT_HEIGHT
         };
         
         setSelection(newSelection);
+        setRectPosition(null); // Clear the preview
       }
     }
   };
@@ -205,9 +220,9 @@ export default function PDFRenderer({
         X: {mousePosition.x}, Y: {mousePosition.y}
       </div>
       
-      {isSelectionMode && !selection && !isDrawing && (
+      {isSelectionMode && !selection && (
         <div className="absolute top-0 left-0 bg-white bg-opacity-75 p-2 m-2 border border-gray-300 rounded text-sm">
-          Click and drag to draw a rectangle
+          Click to place a 300×150 signature field
         </div>
       )}
     </div>

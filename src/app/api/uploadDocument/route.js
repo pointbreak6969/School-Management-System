@@ -1,9 +1,7 @@
 import connectDb from "../../../lib/dbConnect";
 import { join } from "path";
-import { writeFile } from "fs/promises";
 import { NextResponse } from "next/server";
 import Document from "../../../models/document.model";
-import { join } from "path";
 import { writeFile, unlink } from "fs/promises";
 import { uploadOnCloudinary } from "../../../lib/uploadOnCloudinary";
 
