@@ -11,9 +11,12 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { signInSchema } from "../../schemas/signInSchema";
+import { Loader2 } from "lucide-react";
+
 const Page = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const {
     handleSubmit,
     register,
@@ -24,7 +27,9 @@ const Page = () => {
       email: "",
       password: "",
     },
+    mode: "onChange",
   });
+  
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
@@ -33,27 +38,41 @@ const Page = () => {
         password: data.password,
         redirect: false,
       });
+      
+      if (!response) {
+        throw new Error("Network error - couldn't connect to authentication service");
+      }
+      
       if (response.error) {
-        toast.error(response.error);
+        // Handle specific error messages
+        if (response.error.includes("credentials")) {
+          toast.error("Invalid email or password. Please try again.");
+        } else {
+          toast.error(response.error);
+        }
         return;
       }
-      router.push("/");
+      
+      toast.success("Sign in successful!");
+      router.push("/dashboard");
     } catch (error) {
-      toast.error("An unexpected error occurred. Please try again.");
+      console.error("Sign in error:", error);
+      toast.error(error.message || "An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
+  
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <Card className="w-96">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 py-8">
+      <Card className="w-full max-w-md mx-4">
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-center mb-6 text-gray-800">
             Sign In
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="mb-4">
               <label
                 htmlFor="email"
@@ -66,9 +85,17 @@ const Page = () => {
                 type="email"
                 id="email"
                 placeholder="Enter your email"
-                className="shadow-sm border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-teal-500 focus:border-teal-500 transition duration-200"
+                className={`shadow-sm border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-teal-500 focus:border-teal-500 transition duration-200 ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                }`}
+                disabled={isSubmitting}
+                autoComplete="email"
               />
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+              )}
             </div>
+            
             <div className="mb-6">
               <label
                 htmlFor="password"
@@ -81,15 +108,30 @@ const Page = () => {
                 type="password"
                 id="password"
                 placeholder="Enter your password"
-                className="shadow-sm border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-teal-500 focus:border-teal-500 transition duration-200"
+                className={`shadow-sm border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring focus:ring-teal-500 focus:border-teal-500 transition duration-200 ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                }`}
+                disabled={isSubmitting}
+                autoComplete="current-password"
               />
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+              )}
             </div>
 
             <Button
               type="submit"
               className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded transition duration-200 focus:outline-none focus:ring focus:ring-teal-300"
+              disabled={isSubmitting}
             >
-              Sign In
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
           </form>
 

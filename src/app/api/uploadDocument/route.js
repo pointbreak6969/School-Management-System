@@ -1,9 +1,10 @@
-import connectDb from "@/lib/dbConnect";
+import connectDb from "../../../lib/dbConnect";
 import { join } from "path";
 import { writeFile } from "fs/promises";
 import { NextResponse } from "next/server";
-import Document from "@/models/document.model";
+import Document from "../../../models/document.model";
 import fs from "fs";
+import { uploadOnCloudinary } from "../../../lib/uploadOnCloudinary";
 export async function POST(req) {
   await connectDb();
 
@@ -78,7 +79,7 @@ export async function POST(req) {
   }
 }
 
-export  async function PATCH(req) {
+export async function PATCH(req) {
   await connectDb();
   try {
     const { id } = req.params;
@@ -86,8 +87,9 @@ export  async function PATCH(req) {
     const signature = data.get("signature");
     const signedBy = data.get("signedBy");
     const signedTime = new Date();
-    const signatureField = JSON.parse(data.get("signatureField"));
     const newDocument = data.get("newDocument");
+    
+    // Find the existing document
     const document = await Document.findById(id);
     if (!document) {
       return NextResponse.json(
@@ -100,6 +102,8 @@ export  async function PATCH(req) {
         }
       );
     }
+    
+    // Handle document file update
     fs.unlinkSync(document.documentRef);
     const bytes = await newDocument.arrayBuffer();
     const fileBuffer = Buffer.from(bytes);
@@ -117,18 +121,31 @@ export  async function PATCH(req) {
         }
       );
     }
-    const result = await Document.findByIdAndUpdate(
-      id,
-      {
-        documentRef: filePath,
+    
+    // Upload the new signature to Cloudinary
+    const signatureImage = await uploadOnCloudinary(signature);
+    
+    // Prepare update data that appends new information instead of replacing
+    const updateData = {
+      // Update document path
+      signedDocument: filePath,
+      // Push the new signer's email to the array
+      $push: {
         signedBy: signedBy,
         signedTime: signedTime,
-        signatureField: signatureField,
-        signatures: signature,
-        status: "signed",
+        signatures: signatureImage.url,
       },
+      // Update status
+      status: "signed",
+    };
+    
+    // Update the document
+    const result = await Document.findByIdAndUpdate(
+      id,
+      updateData,
       { new: true }
     );
+    
     if (!result) {
       return NextResponse.json(
         {
@@ -140,6 +157,20 @@ export  async function PATCH(req) {
         }
       );
     }
+    
+    // Check if all receivers have signed, update status to completed if yes
+    const allSigned = result.receivers.every(receiver => 
+      result.signedBy.includes(receiver)
+    );
+    
+    if (allSigned) {
+      await Document.findByIdAndUpdate(
+        id,
+        { status: "completed" },
+        { new: true }
+      );
+    }
+    
     return NextResponse.json(
       {
         success: true,
@@ -151,6 +182,7 @@ export  async function PATCH(req) {
       }
     );
   } catch (error) {
+    console.error("Error in PATCH route:", error);
     return NextResponse.json(
       {
         success: false,
@@ -162,4 +194,3 @@ export  async function PATCH(req) {
     );
   }
 }
-

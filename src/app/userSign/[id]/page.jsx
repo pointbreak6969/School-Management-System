@@ -1,7 +1,6 @@
 "use server";
 import { notFound } from 'next/navigation';
-import DocumentViewer from "../../../components/DocumentViewer"
-
+import DocumentSigner from "../../../components/DocumentSigner"
 async function Page({ params }) {
   const { id } = params;
   try {
@@ -20,7 +19,8 @@ async function Page({ params }) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
         <h1 className="text-2xl font-bold mb-4">Document ID: {id}</h1>
-        <DocumentViewer documentData={documentData} />
+        {/* <DocumentViewer documentData={documentData.data} /> */}
+        <DocumentSigner/>
       </div>
     );
   } catch (error) {

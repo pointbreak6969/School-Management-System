@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 import Link from "next/link";
 import { Home, FileText, LogOut, PlusCircle } from "lucide-react";
 import { signOut } from "next-auth/react";

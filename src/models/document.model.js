@@ -6,7 +6,7 @@ const DocumentSchema = new Schema({
     type: String,
     required: [true, "Please provide a title"],
   },
-  documentRef: {
+  documentRef: { //original file path
     type: String,
     required: true,
   },
@@ -32,6 +32,9 @@ const DocumentSchema = new Schema({
       type: Date,
     },
   ],
+  signedDocument: {
+    type: [String],
+  },
   signatureField: [
     {
       x: {
