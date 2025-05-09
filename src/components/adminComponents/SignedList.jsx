@@ -1,9 +1,9 @@
 // components/adminComponents/SignedList.js
 "use client";
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "../../components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
+import { Badge } from "../../components/ui/badge";
 import { FileSignature } from "lucide-react";
 import Link from "next/link";
 

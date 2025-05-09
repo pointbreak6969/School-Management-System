@@ -1,7 +1,7 @@
 "use server";
 
 import Sidebar from "../../components/adminComponents/Sidebar";
-import SignedList from "@/components/adminComponents/SignedList";
+import SignedList from "../../components/adminComponents/SignedList";
 
 async function fetchSignedDocuments() {
   try {

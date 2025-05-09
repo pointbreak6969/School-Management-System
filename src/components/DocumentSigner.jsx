@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import SignatureCanvas from "react-signature-canvas"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Button } from "./ui/button"
@@ -12,7 +12,7 @@ import Cropper from "react-easy-crop"
 import { Slider } from "./ui/slider"
 import { PDFDocument } from "pdf-lib"
 import { Separator } from "./ui/separator"
-
+import {getPresignedUrl} from "../lib/actions"
 // Helper function to create cropped image
 const createCroppedImage = async (imageSrc, pixelCrop) => {
   const image = new Image()
@@ -48,7 +48,7 @@ const createCroppedImage = async (imageSrc, pixelCrop) => {
   })
 }
 
-export default function DocumentSigner() {
+export default function DocumentSigner(documentData) {
   const [signatureImage, setSignatureImage] = useState(null)
   const [uploadedImage, setUploadedImage] = useState(null)
   const [activeTab, setActiveTab] = useState("draw")
@@ -67,7 +67,7 @@ export default function DocumentSigner() {
     height: 90,
     pageNo: 1,
   })
-
+  
   // Clear the drawn signature
   const clearSignature = () => {
     if (signatureRef.current) {
@@ -99,17 +99,7 @@ export default function DocumentSigner() {
     }
   }
 
-  // Handle document file upload
-  const handleDocumentUpload = (e) => {
-    const file = e.target.files[0]
-    if (file && file.type === "application/pdf") {
-      setDocumentFile(file)
-      const url = URL.createObjectURL(file)
-      setDocumentUrl(url)
-    } else if (file) {
-      alert("Please upload a PDF file")
-    }
-  }
+  
 
   // Handle crop complete
   const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
@@ -163,8 +153,8 @@ export default function DocumentSigner() {
 
   // Apply signature to PDF and download
   const applySignatureAndDownload = async () => {
-    if (!signatureImage || !documentFile) {
-      alert("Please provide both a signature and a document")
+    if (!signatureImage) {
+      alert("Please provide a signature ")
       return
     }
 
@@ -240,25 +230,7 @@ export default function DocumentSigner() {
           <CardHeader className="bg-slate-50 rounded-t-lg border-b">
             <CardTitle className="text-center text-slate-800">Document Signer</CardTitle>
           </CardHeader>
-          <CardContent className="flex-grow overflow-auto p-4 space-y-6">
-            {/* Document Upload Section */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-medium text-slate-800">Upload Document</h3>
-              <div className="border-2 border-dashed border-slate-300 rounded-md bg-white p-6 text-center hover:bg-slate-50 transition-colors cursor-pointer">
-                <Input
-                  id="document-upload"
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handleDocumentUpload}
-                  className="hidden"
-                />
-                <Label htmlFor="document-upload" className="cursor-pointer flex flex-col items-center gap-2">
-                  <FileUp className="h-8 w-8 text-slate-400" />
-                  <span className="text-sm font-medium text-slate-700">Click to upload PDF</span>
-                  <span className="text-xs text-slate-500">{documentFile ? documentFile.name : "PDF files only"}</span>
-                </Label>
-              </div>
-            </div>
+          <CardContent className="flex-grow overflow-auto p-4 space-y-6">   
 
             <Separator />
 

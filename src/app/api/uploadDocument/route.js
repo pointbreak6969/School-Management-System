@@ -1,65 +1,11 @@
 import connectDb from "../../../lib/dbConnect";
-import { join } from "path";
 import { NextResponse } from "next/server";
 import Document from "../../../models/document.model";
-import { writeFile, unlink } from "fs/promises";
-import { uploadOnCloudinary } from "../../../lib/uploadOnCloudinary";
+import { uploadOnAws } from "../../../lib/uploadOnAWS";
 
-// Helper function for handling file uploads
-async function handleFileUpload(file) {
-  if (!file) {
-    throw new Error("No file provided");
-  }
-
-  // Save file temporarily to local server
-  const bytes = await file.arrayBuffer();
-  const fileBuffer = Buffer.from(bytes);
-  const filePath = join(process.cwd(), "public/uploads", file.name);
-
-  try {
-    await writeFile(filePath, fileBuffer);
-  } catch (err) {
-    throw new Error("Failed to upload file locally");
-  }
-
-  // Upload file to Cloudinary
-  let cloudinaryUrl;
-  try {
-    const cloudinaryResult = await uploadOnCloudinary(filePath);
-    if (!cloudinaryResult || !cloudinaryResult.url) {
-      throw new Error("Failed to upload to Cloudinary");
-    }
-    cloudinaryUrl = cloudinaryResult.url;
-
-    // Delete local file after successful Cloudinary upload
-    try {
-      await unlink(filePath);
-    } catch (unlinkErr) {
-      console.error(
-        "Error deleting local file after successful upload:",
-        unlinkErr
-      );
-      // Continue execution as this is not a critical error
-    }
-
-    return cloudinaryUrl;
-  } catch (err) {
-    // Delete local file if Cloudinary upload fails
-    try {
-      await unlink(filePath);
-    } catch (unlinkErr) {
-      console.error(
-        "Error deleting local file after failed Cloudinary upload:",
-        unlinkErr
-      );
-    }
-    throw new Error("Failed to upload file to Cloudinary");
-  }
-}
 
 export async function POST(req) {
   await connectDb();
-
   try {
     const data = await req.formData();
     const file = data.get("file");
@@ -82,12 +28,11 @@ export async function POST(req) {
     }
 
     // Use the helper function to handle file upload
-    const cloudinaryUrl = await handleFileUpload(file);
-
+   const awsKey = await uploadOnAws(file, "document");
     // Save document with Cloudinary URL
     const result = await Document.create({
       title,
-      documentRef: cloudinaryUrl,
+      documentRef: awsKey.key,
       sender,
       receivers: receivers,
       signatureField,
@@ -119,7 +64,8 @@ export async function POST(req) {
 export async function PATCH(req) {
   await connectDb();
   try {
-    const { id } = req.params;
+    const { searchParams } = new URL(req.url); // Get id from query parameters
+    const id = searchParams.get("id");
     const data = await req.formData();
     const signedBy = data.get("signedBy");
     const signedTime = Date.now();
@@ -138,11 +84,11 @@ export async function PATCH(req) {
     }
     let signatureUrl = null;
     if (signatureFile) {
-      signatureUrl = await handleFileUpload(signatureFile);
+      signatureUrl = await uploadOnAws(signatureFile, "signature");
     }
     let signedDocumentUrl = null;
     if (signedDocument) {
-      signedDocumentUrl = await handleFileUpload(signedDocument);
+      signedDocumentUrl = await uploadOnAws(signedDocument, "document");
     }
     const document = await Document.findById(id);
     if (!document) {
