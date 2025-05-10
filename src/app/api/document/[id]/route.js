@@ -6,11 +6,8 @@ export async function GET(req, { params }) {
     try {
         
         const documentId = await params.id;
-        await connectDb();
-      console.log("Fetching document with ID:", documentId); // For debugging
-      
-      const document = await Document.findById(documentId);
-      
+        await connectDb();      
+      const document = await Document.findById(documentId);      
       if (!document) {
         console.log("Document not found");
         return NextResponse.json(
@@ -23,8 +20,6 @@ export async function GET(req, { params }) {
           }
         );
       }
-      
-      console.log("Document found:", document);
       return NextResponse.json(
         {
           success: true,

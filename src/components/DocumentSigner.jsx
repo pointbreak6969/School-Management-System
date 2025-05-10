@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback, useEffect } from "react"
+import { useState, useRef, useCallback } from "react"
 import SignatureCanvas from "react-signature-canvas"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Button } from "./ui/button"
@@ -12,7 +12,7 @@ import Cropper from "react-easy-crop"
 import { Slider } from "./ui/slider"
 import { PDFDocument } from "pdf-lib"
 import { Separator } from "./ui/separator"
-import {getPresignedUrl} from "../lib/actions"
+
 // Helper function to create cropped image
 const createCroppedImage = async (imageSrc, pixelCrop) => {
   const image = new Image()
@@ -48,7 +48,7 @@ const createCroppedImage = async (imageSrc, pixelCrop) => {
   })
 }
 
-export default function DocumentSigner(documentData) {
+export default function DocumentSigner({documentFile}) {
   const [signatureImage, setSignatureImage] = useState(null)
   const [uploadedImage, setUploadedImage] = useState(null)
   const [activeTab, setActiveTab] = useState("draw")
@@ -58,8 +58,6 @@ export default function DocumentSigner(documentData) {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
   const [isCropping, setIsCropping] = useState(false)
   const signatureRef = useRef(null)
-  const [documentFile, setDocumentFile] = useState(null)
-  const [documentUrl, setDocumentUrl] = useState(null)
   const [signaturePosition, setSignaturePosition] = useState({
     x: 100,
     y: 100,
@@ -381,8 +379,8 @@ export default function DocumentSigner(documentData) {
 
       {/* Right side PDF viewer */}
       <div className="w-full lg:w-3/5 h-full bg-white rounded-lg border shadow">
-        {documentUrl ? (
-          <iframe src={documentUrl} className="w-full h-full rounded-lg" title="Document Preview" />
+        {documentFile ? (
+          <iframe src={documentFile} className="w-full h-full rounded-lg" title="Document Preview" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-500 bg-slate-50">
             <div className="text-center space-y-2">

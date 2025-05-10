@@ -1,10 +1,16 @@
 "use server";
 import { notFound } from "next/navigation";
 import DocumentSigner from "../../../components/DocumentSigner";
+import {
+  S3Client,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
 async function Page({ params }) {
   const { id } = await params;
   try {
-    // Use native fetch instead of axios in server components
+   
     const response = await fetch(`${process.env.NEXT_URL}/api/document/${id}`);
 
     if (!response.ok) {
@@ -15,11 +21,22 @@ async function Page({ params }) {
     }
 
     const documentData = await response.json();
-
+    const s3 = new S3Client({
+      region: process.env.AWS_REGION,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      },
+    });
+     const getCommand = new GetObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: documentData.data.documentRef,
+        });
+        const url = await getSignedUrl(s3, getCommand, { expiresIn: 3600 });
     return (
       <div className="p-6 max-w-4xl mx-auto">
         <h1 className="text-2xl font-bold mb-4">Document ID: {id}</h1>
-        <DocumentSigner documentData={documentData} />
+        <DocumentSigner documentFile={url} />
       </div>
     );
   } catch (error) {
@@ -44,3 +61,4 @@ async function Page({ params }) {
 }
 
 export default Page;
+
