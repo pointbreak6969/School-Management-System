@@ -1,5 +1,5 @@
-import connectDb from "@/lib/dbConnect";
-import Document from "@/models/document.model";
+import connectDb from '../../../lib/dbConnect';
+import Document from "../../../models/User.model";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 

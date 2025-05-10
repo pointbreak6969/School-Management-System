@@ -20,6 +20,7 @@ async function Page({ params }) {
       throw new Error(`Failed to fetch document: ${response.statusText}`);
     }
 
+
     const documentData = await response.json();
     const s3 = new S3Client({
       region: process.env.AWS_REGION,
@@ -41,6 +42,7 @@ async function Page({ params }) {
     );
   } catch (error) {
     console.error("Error fetching document:", error);
+
 
     // Return error state
     return (
